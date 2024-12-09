@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Basketball Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      flex-direction: column;
+    }
+
+    .game-container {
+      text-align: center;
+    }
+
+    .court {
+      background-color: #4e8fcb;
+      width: 400px;
+      height: 300px;
+      position: relative;
+      border-radius: 10px;
+      margin: 20px 0;
+      border: 2px solid #333;
+    }
+
+    .hoop {
+      position: absolute;
+      top: 50px;
+      left: 330px;
+      width: 40px;
+      height: 20px;
+      background-color: #d9534f;
+      border-radius: 10px 10px 0 0;
+    }
+
+    .ball {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      width: 30px;
+      height: 30px;
+      background-color: orange;
+      border-radius: 50%;
+      transition: all 0.3s ease-out;
+    }
+
+    .scoreboard {
+      font-size: 24px;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+
+    .btn-shoot {
+      background-color: #5bc0de;
+      border: none;
+      padding: 10px 20px;
+      font-size: 18px;
+      cursor: pointer;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+
+    .btn-shoot:hover {
+      background-color: #31b0d5;
+    }
+
+    .aim-control {
+      margin-top: 10px;
+      font-size: 16px;
+    }
+
+    .shoot-direction {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <h1>Basketball Game</h1>
+    <div class="court" id="court">
+      <div class="hoop"></div>
+      <div class="ball" id="ball"></div>
+    </div>
+    <div class="scoreboard">
+      Score: <span id="score">0</span>
+    </div>
+    <div class="aim-control">
+      <p>Click and drag to aim the shot!</p>
+      <button class="btn-shoot" id="shootButton">Shoot!</button>
+    </div>
+  </div>
+
+  <script>
+    let score = 0;
+    let shotPower = 50; // Default shot power
+    const scoreElement = document.getElementById("score");
+    const ball = document.getElementById("ball");
+    const shootButton = document.getElementById("shootButton");
+    const court = document.getElementById("court");
+
+    let isDragging = false;
+    let aimAngle = 0; // Angle of the shot
+    let initialMouseX = 0;
+    let initialMouseY = 0;
+
+    let ballInitialLeft = 0;
+    let ballInitialBottom = 10;
+
+    // Mouse drag to aim
+    court.addEventListener("mousedown", (event) => {
+      isDragging = true;
+      initialMouseX = event.clientX;
+      initialMouseY = event.clientY;
+
+      // Save initial ball position
+      ballInitialLeft = ball.offsetLeft;
+      ballInitialBottom = ball.offsetTop;
+    });
+
+    court.addEventListener("mousemove", (event) => {
+      if (!isDragging) return;
+
+      // Calculate the change in mouse position
+      const deltaX = event.clientX - initialMouseX;
+      const deltaY = event.clientY - initialMouseY;
+
+      // Calculate aim angle
+      aimAngle = Math.atan2(deltaY, deltaX); // Get angle from initial point
+
+      // Rotate the ball visually to show direction
+      ball.style.transform = `rotate(${(aimAngle * 180) / Math.PI}deg)`;
+    });
+
+    court.addEventListener("mouseup", () => {
+      if (isDragging) {
+        isDragging = false;
+        alert(`Aimed! Now click 'Shoot!' to launch the ball.`);
+      }
+    });
+
+    // Shoot the ball with the current aim
+    shootButton.addEventListener("click", () => {
+      // Reset ball position
+      ball.style.transition = "none"; // Disable transition for immediate movement
+      ball.style.left = `${ballInitialLeft}px`;
+      ball.style.bottom = `${ballInitialBottom}px`;
+
+      // Calculate shot direction
+      const shotDirectionX = Math.cos(aimAngle);
+      const shotDirectionY = Math.sin(aimAngle);
+
+      // Set power of the shot (how far it moves)
+      shotPower = 100; // For simplicity, set power to a fixed value (could be controlled dynamically)
+
+      // Shoot the ball
+      setTimeout(() => {
+        ball.style.transition = "all 0.5s ease-out";
+        ball.style.left = `${ball.offsetLeft + shotDirectionX * shotPower}px`;
+        ball.style.bottom = `${ball.offsetTop - shotDirectionY * shotPower}px`;
+      }, 10);
+
+      // Check if the ball enters the hoop (simplified check)
+      setTimeout(() => {
+        if (
+          ball.offsetLeft >= 330 &&
+          ball.offsetLeft <= 370 &&
+          ball.offsetTop >= 40 &&
+          ball.offsetTop <= 70
+        ) {
+          score++;
+          scoreElement.innerText = score;
+          alert("Score! You made the shot!");
+        }
+      }, 600);
+
+      // Reset ball position after the shot
+      setTimeout(() => {
+        ball.style.left = "50%";
+        ball.style.bottom = "10px";
+      }, 700);
+    });
+  </script>
+</body>
+</html>
